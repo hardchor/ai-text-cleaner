@@ -1,6 +1,8 @@
 # AI Text Cleaner
 
-A simple Python script to normalize text, often useful as a preprocessing step for AI models or text analysis tasks. It cleans up common typographic inconsistencies.
+![Web UI](web_ui.png)
+
+A simple UI, CLI and Python script to normalize text, often useful as a preprocessing step for AI models or text analysis tasks. It cleans up common typographic inconsistencies.
 
 ## Features
 
@@ -24,8 +26,6 @@ No external libraries are required.
 ## Usage
 
 ### Web UI
-
-![Web UI](web_ui.png)
 
 Use Docker Compose to build and run services:
 
