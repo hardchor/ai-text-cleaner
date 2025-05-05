@@ -48,6 +48,19 @@ python main.py
 <Normalized text will be printed here>
 ```
 
+## Building an Executable
+
+You can generate a standalone executable using PyInstaller via the `uvx` wrapper. This places the built binary in your local bin directory:
+
+```bash
+uvx pyinstaller normalize.py \
+  --onefile \
+  --name normalize \
+  --distpath ~/.local/bin
+```
+
+After building, ensure `~/.local/bin` is in your `PATH` to run `normalize` directly from the command line.
+
 ## License
 
 This project does not currently have a license. Consider adding one if distributing.
