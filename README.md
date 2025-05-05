@@ -23,6 +23,18 @@ No external libraries are required.
 
 ## Usage
 
+### Web UI
+
+Use Docker Compose to build and run services:
+
+```bash
+docker-compose up --build
+```
+
+Then, access the app at `http://localhost:8501`.
+
+### Command Line Interface
+
 The script can read text from a file specified as a command-line argument or from standard input. The normalized text is always written to standard output.
 
 **1. From a file:**

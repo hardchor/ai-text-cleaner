@@ -1,0 +1,7 @@
+services:
+  ai-text-cleaner:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONUNBUFFERED=1
