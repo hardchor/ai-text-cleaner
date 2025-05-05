@@ -25,6 +25,8 @@ No external libraries are required.
 
 ### Web UI
 
+![Web UI](web_ui.png)
+
 Use Docker Compose to build and run services:
 
 ```bash
