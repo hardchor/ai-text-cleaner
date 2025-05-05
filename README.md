@@ -1,8 +1,8 @@
 # AI Text Cleaner
 
-![Web UI](web_ui.png)
-
 A simple UI, CLI and Python script to normalize text, often useful as a preprocessing step for AI models or text analysis tasks. It cleans up common typographic inconsistencies.
+
+![Web UI](web_ui.png)
 
 ## Features
 
