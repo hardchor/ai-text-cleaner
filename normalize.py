@@ -35,8 +35,9 @@ def normalize(text: str, config: Optional[Dict[str, bool]] = None) -> str:
             text = text.replace(quote, "'")
     # 3. Strip non-breaking & zero-width spaces
     if cfg['strip_spaces']:
-        for ch in ('\u00A0', '\u202F', '\u200B'):
-            text = text.replace(ch, '')
+        for ch in ('\u00A0', '\u202F'): # Non-breaking space, narrow non-breaking space
+            text = text.replace(ch, ' ')
+        text = text.replace('\u200B', '')   # Zero-width space
     # 4. Replace ellipsis
     if cfg['replace_ellipsis']:
         text = text.replace('\u2026', '...')
