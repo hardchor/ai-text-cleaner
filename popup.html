@@ -12,16 +12,58 @@
       width: 95%;
       min-height: 150px;
       margin-bottom: 10px;
+      padding: 5px; /* Added for consistency with highlight div */
+      border: 1px solid #ccc; /* Added for consistency */
     }
     button {
       padding: 10px;
       margin-right: 5px;
+    }
+    #highlightedTextDisplay {
+      width: 95%;
+      min-height: 150px;
+      margin-top: 10px; /* Add some space above it */
+      margin-bottom: 10px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      white-space: pre-wrap; /* Important for showing code correctly */
+      word-wrap: break-word;   /* Important for long lines */
+      font-family: monospace; /* Good for code */
+    }
+    .highlight-char {
+      background-color: yellow;
+      position: relative; /* For tooltip positioning */
+      cursor: help; /* Indicate more info is available */
+    }
+    .tooltip-text {
+      visibility: hidden;
+      width: max-content;
+      max-width: 250px; /* Prevent very wide tooltips */
+      background-color: black;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%; /* Position above the text */
+      left: 50%;
+      transform: translateX(-50%); /* Better centering for variable width */
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.9em; /* Slightly smaller font for tooltip */
+    }
+    .highlight-char:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
     }
   </style>
 </head>
 <body>
   <h3>AI Code Cleaner</h3>
   <textarea id="codeInput" placeholder="Paste your AI-generated code here..."></textarea>
+  <div id="highlightedTextDisplay"></div> <!-- New element -->
   <button id="cleanButton">Clean</button>
   <button id="copyButton">Copy</button>
   <script src="normalize.js"></script>
