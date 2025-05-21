@@ -7,39 +7,33 @@
       font-family: sans-serif;
       width: 400px;
       padding: 10px;
+      display: flex; /* For centering toast or other elements if needed */
+      flex-direction: column;
+      align-items: center; /* Center children like the code input */
     }
-    textarea {
+    /* Styles for the new contenteditable div */
+    #editableCodeInput {
       width: 95%;
-      min-height: 150px;
-      margin-bottom: 10px;
-      padding: 5px; /* Added for consistency with highlight div */
-      border: 1px solid #ccc; /* Added for consistency */
-    }
-    button {
-      padding: 10px;
-      margin-right: 5px;
-    }
-    #highlightedTextDisplay {
-      width: 95%;
-      min-height: 150px;
-      margin-top: 10px; /* Add some space above it */
-      margin-bottom: 10px;
-      padding: 5px;
+      min-height: 200px;
+      padding: 8px;
       border: 1px solid #ccc;
-      background-color: #f9f9f9;
-      white-space: pre-wrap; /* Important for showing code correctly */
-      word-wrap: break-word;   /* Important for long lines */
-      font-family: monospace; /* Good for code */
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background-color: #fff;
+      overflow-y: auto;
+      margin-bottom: 10px; /* Space before any potential buttons or status */
     }
+    /* Styles for highlight and tooltip - Preserved */
     .highlight-char {
       background-color: yellow;
-      position: relative; /* For tooltip positioning */
-      cursor: help; /* Indicate more info is available */
+      position: relative;
+      cursor: help;
     }
     .tooltip-text {
       visibility: hidden;
       width: max-content;
-      max-width: 250px; /* Prevent very wide tooltips */
+      max-width: 250px;
       background-color: black;
       color: #fff;
       text-align: center;
@@ -47,14 +41,35 @@
       padding: 5px 10px;
       position: absolute;
       z-index: 1;
-      bottom: 125%; /* Position above the text */
+      bottom: 125%;
       left: 50%;
-      transform: translateX(-50%); /* Better centering for variable width */
+      transform: translateX(-50%);
       opacity: 0;
       transition: opacity 0.3s;
-      font-size: 0.9em; /* Slightly smaller font for tooltip */
+      font-size: 0.9em;
     }
     .highlight-char:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    /* Styles for Toast Notification */
+    .toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      padding: 16px;
+      position: fixed; /* Fixed position within the popup */
+      z-index: 10;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 30px;
+      opacity: 0;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    .toast.show {
       visibility: visible;
       opacity: 1;
     }
@@ -62,10 +77,9 @@
 </head>
 <body>
   <h3>AI Code Cleaner</h3>
-  <textarea id="codeInput" placeholder="Paste your AI-generated code here..."></textarea>
-  <div id="highlightedTextDisplay"></div> <!-- New element -->
-  <button id="cleanButton">Clean</button>
-  <button id="copyButton">Copy</button>
+  <div id="editableCodeInput" contenteditable="true"></div>
+  <div id="toastNotification" class="toast"></div>
+  <!-- Scripts remain the same -->
   <script src="normalize.js"></script>
   <script src="popup.js"></script>
 </body>
