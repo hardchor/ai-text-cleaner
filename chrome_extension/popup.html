@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AI Text Cleaner</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
+        width: 400px;
+        padding: 15px; /* Increased padding */
+        display: flex;
+        flex-direction: column;
+        align-items: stretch; /* Changed from center to stretch for left alignment */
+        background-color: #f8f9fa; /* Softer light mode background */
+        color: #212529; /* Darker text for better contrast */
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        border-radius: 8px; /* Rounded corners for the popup body */
+      }
+      .header-container {
+        /* New style for header container */
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 15px; /* Space below header */
+      }
+      #headerIcon {
+        /* New style for header icon */
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+      }
+      h3 {
+        /* Styling for the title */
+        color: #343a40;
+        margin: 0; /* Adjusted margins, container handles spacing */
+        font-weight: 600; /* Slightly bolder */
+        text-align: left; /* Ensure left alignment */
+      }
+      /* Styles for the new contenteditable div */
+      #editableCodeInput {
+        width: 95%;
+        min-height: 200px;
+        padding: 10px; /* Increased padding */
+        border: 1px solid #ced4da; /* Softer border */
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+          Courier, monospace; /* Modern monospace */
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        background-color: #ffffff; /* Clear white for input */
+        overflow-y: auto;
+        margin-bottom: 15px; /* Increased space */
+        border-radius: 6px; /* Rounded corners */
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075); /* Subtle inset shadow */
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      }
+      #editableCodeInput:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075),
+          0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+      /* Styles for highlight and tooltip - Preserved */
+      .highlight-char {
+        background-color: #ffe066; /* Brighter yellow */
+        position: relative;
+        cursor: help;
+        border-radius: 2px;
+      }
+      .tooltip-text {
+        visibility: hidden;
+        width: max-content;
+        max-width: 250px;
+        background-color: #343a40; /* Darker tooltip */
+        color: #f8f9fa; /* Light text for tooltip */
+        text-align: center;
+        border-radius: 4px; /* Softer radius */
+        padding: 8px 12px; /* Adjusted padding */
+        position: absolute;
+        z-index: 1;
+        bottom: 130%; /* Adjusted position */
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        font-size: 0.85em; /* Slightly smaller */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      }
+      .highlight-char:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+      }
+      /* Styles for Toast Notification */
+      .toast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        padding: 16px;
+        position: fixed; /* Fixed position within the popup */
+        z-index: 10;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 30px;
+        opacity: 0;
+        transition: opacity 0.5s, visibility 0.5s;
+      }
+      .toast.show {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      /* Dark Mode Styles */
+      body.dark-mode {
+        background-color: #212529; /* Dark background */
+        color: #e9ecef; /* Light text */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      }
+      body.dark-mode h3 {
+        color: #f8f9fa; /* Lighter title for dark mode */
+      }
+      body.dark-mode #editableCodeInput {
+        background-color: #343a40; /* Darker input area */
+        color: #f8f9fa; /* Light text in input */
+        border-color: #495057; /* Darker border */
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      body.dark-mode #editableCodeInput:focus {
+        border-color: #007bff; /* Brighter blue for focus */
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1),
+          0 0 0 0.2rem rgba(0, 123, 255, 0.45);
+      }
+      body.dark-mode .highlight-char {
+        background-color: #a98600; /* Adjusted dark mode highlight */
+      }
+      body.dark-mode .tooltip-text {
+        background-color: #495057; /* Dark mode tooltip background */
+        color: #e9ecef; /* Dark mode tooltip text */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
+      body.dark-mode .toast {
+        background-color: #495057; /* Darker toast for dark mode */
+        color: #f8f9fa;
+      }
+
+      /* Theme Icon Styles */
+      #themeToggleIcon {
+        position: absolute;
+        top: 16px; /* Adjusted for heading alignment */
+        right: 15px; /* Consistent with body padding */
+        width: 24px; /* Smaller button */
+        height: 24px; /* Smaller button */
+        border-radius: 50%; /* Round button */
+        cursor: pointer;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 16px 16px; /* Icon size within button */
+        transition: background-color 0.2s ease-in-out;
+
+        /* Default: Light mode styles (Sun icon) */
+        background-color: #f0f0f0; /* Light grey background for the button */
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'><circle cx='12' cy='12' r='4' fill='%23FDB813'/><path d='M12 1V4M12 20V23M4.22 4.22L6.34 6.34M17.66 17.66L19.78 19.78M1 12H4M20 12H23M4.22 19.78L6.34 17.66M17.66 6.34L19.78 4.22' stroke='%23FDB813' stroke-width='2.5' stroke-linecap='round'/></svg>");
+      }
+
+      #themeToggleIcon:hover {
+        background-color: #e9ecef; /* Adjusted hover for light mode */
+      }
+
+      body.dark-mode #themeToggleIcon {
+        /* Dark mode styles (Moon icon) */
+        background-color: #343a40; /* Adjusted background for dark mode button */
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23FFEE58'/><circle cx='15' cy='12' r='10' fill='%23343a40'/></svg>");
+      }
+
+      body.dark-mode #themeToggleIcon:hover {
+        background-color: #495057; /* Adjusted hover for dark mode */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="themeToggleIcon" title="Toggle theme"></div>
+    <div class="header-container">
+      <!-- New container for icon and heading -->
+      <img src="images/icon128.png" alt="App Icon" id="headerIcon" />
+      <h3>AI Text Cleaner</h3>
+    </div>
+    <div id="editableCodeInput" contenteditable="true"></div>
+    <div id="toastNotification" class="toast"></div>
+    <!-- Scripts remain the same -->
+    <script src="normalize.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

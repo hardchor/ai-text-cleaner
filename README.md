@@ -1,5 +1,18 @@
 # AI Text Cleaner
 
+## Chrome Extension
+
+To load this tool as a Chrome Extension:
+
+1.  Open Google Chrome.
+2.  Navigate to `chrome://extensions` in your address bar.
+3.  Ensure that "Developer mode" is enabled. You'll usually find a toggle switch for this in the top-right corner of the extensions page.
+4.  Click the "Load unpacked" button. This will typically appear on the top-left of the page after enabling Developer mode.
+5.  A file dialog will open. Navigate to and select the `chrome_extension` directory (located in the root of this repository). This directory contains all the necessary files like `manifest.json`, `popup.html`, etc.
+6.  The "AI Text Cleaner" extension should now appear in your list of extensions and be ready to use from your Chrome toolbar.
+
+---
+
 A simple UI, CLI and Python script to normalize text, often useful as a preprocessing step for AI models or text analysis tasks. It cleans up common typographic inconsistencies.
 
 ![Web UI](web_ui.png)
