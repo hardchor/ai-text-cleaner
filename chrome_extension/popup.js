@@ -1,10 +1,11 @@
-document.addEventListener('DOMContentLoaded', function () {
-  const editableCodeInput = document.getElementById('editableCodeInput');
-  const toastNotification = document.getElementById('toastNotification');
+document.addEventListener("DOMContentLoaded", function () {
+  const editableCodeInput = document.getElementById("editableCodeInput");
+  const toastNotification = document.getElementById("toastNotification");
+  const themeToggleIcon = document.getElementById("themeToggleIcon"); // Changed variable name
 
   // --- Helper: escapeHTML ---
   function escapeHTML(str) {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
   }
@@ -12,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // --- Helper: Debounce ---
   function debounce(func, delay) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
       const context = this;
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(context, args), delay);
@@ -25,9 +26,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!toastNotification) return;
     clearTimeout(toastTimeout); // Clear any existing toast timeout
     toastNotification.textContent = message;
-    toastNotification.classList.add('show');
+    toastNotification.classList.add("show");
     toastTimeout = setTimeout(() => {
-      toastNotification.classList.remove('show');
+      toastNotification.classList.remove("show");
     }, duration);
   }
 
@@ -36,7 +37,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // within the plain text content of the container.
   function saveSelection(containerEl) {
     const selection = window.getSelection();
-    if (selection.rangeCount === 0 || !containerEl.contains(selection.anchorNode)) {
+    if (
+      selection.rangeCount === 0 ||
+      !containerEl.contains(selection.anchorNode)
+    ) {
       return null; // No selection or selection is outside the container
     }
     const range = selection.getRangeAt(0);
@@ -47,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     return {
       start: start,
-      end: start + range.toString().length
+      end: start + range.toString().length,
     };
   }
 
@@ -60,16 +64,26 @@ document.addEventListener('DOMContentLoaded', function () {
     range.collapse(true);
 
     let nodeStack = [containerEl];
-    let node, foundStart = false, foundEnd = false;
+    let node,
+      foundStart = false,
+      foundEnd = false;
 
     while (!foundEnd && (node = nodeStack.pop())) {
       if (node.nodeType === Node.TEXT_NODE) {
         const nextCharIndex = charIndex + node.length;
-        if (!foundStart && savedSel.start >= charIndex && savedSel.start <= nextCharIndex) {
+        if (
+          !foundStart &&
+          savedSel.start >= charIndex &&
+          savedSel.start <= nextCharIndex
+        ) {
           range.setStart(node, savedSel.start - charIndex);
           foundStart = true;
         }
-        if (!foundEnd && savedSel.end >= charIndex && savedSel.end <= nextCharIndex) {
+        if (
+          !foundEnd &&
+          savedSel.end >= charIndex &&
+          savedSel.end <= nextCharIndex
+        ) {
           range.setEnd(node, savedSel.end - charIndex);
           foundEnd = true;
         }
@@ -82,55 +96,105 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
     // Fallback if end was not found (e.g. text shortened)
-     if (!foundEnd) {
-        range.setEnd(containerEl, containerEl.childNodes.length);
-     }
-
+    if (!foundEnd) {
+      range.setEnd(containerEl, containerEl.childNodes.length);
+    }
 
     const sel = window.getSelection();
     sel.removeAllRanges();
     sel.addRange(range);
   }
-  
+
   // --- Helper: Get Raw Text from contenteditable ---
   function getRawText(containerEl) {
-    let text = '';
-    containerEl.childNodes.forEach(node => {
-        text += node.textContent;
+    let text = "";
+    containerEl.childNodes.forEach((node) => {
+      text += node.textContent;
     });
     return text;
   }
 
+  // --- Theme Management ---
+  function applyTheme(isDark) {
+    if (isDark) {
+      document.body.classList.add("dark-mode");
+      // themeToggleIcon.checked = true; // No longer a checkbox
+    } else {
+      document.body.classList.remove("dark-mode");
+      // themeToggleIcon.checked = false; // No longer a checkbox
+    }
+  }
+
+  // Load saved theme or use system preference
+  chrome.storage.local.get("theme", (data) => {
+    if (data.theme === "dark") {
+      applyTheme(true);
+    } else if (data.theme === "light") {
+      applyTheme(false);
+    } else {
+      // Default to system preference
+      const prefersDark =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(prefersDark);
+      // Save the detected system preference as the initial setting
+      chrome.storage.local.set({ theme: prefersDark ? "dark" : "light" });
+    }
+  });
+
+  // Theme icon click listener
+  if (themeToggleIcon) {
+    themeToggleIcon.addEventListener("click", function () {
+      const isCurrentlyDark = document.body.classList.contains("dark-mode");
+      const newThemeIsDark = !isCurrentlyDark; // Toggle the theme
+      applyTheme(newThemeIsDark);
+      chrome.storage.local.set({ theme: newThemeIsDark ? "dark" : "light" });
+      showToast(
+        newThemeIsDark ? "Dark mode enabled" : "Light mode enabled",
+        1500
+      );
+    });
+  } else {
+    console.error("Theme toggle icon not found.");
+  }
 
   // --- Core Logic: processInputAndHighlight ---
   function processInputAndHighlight() {
-    if (!editableCodeInput || typeof getNormalizationSteps !== 'function' || typeof normalize !== 'function') {
+    if (
+      !editableCodeInput ||
+      typeof getNormalizationSteps !== "function" ||
+      typeof normalize !== "function"
+    ) {
       console.error("Missing elements or normalize functions.");
       // Optionally show a toast error here if it's a persistent issue
       return;
     }
-    
+
     const rawText = getRawText(editableCodeInput);
     const savedSel = saveSelection(editableCodeInput);
     const steps = getNormalizationSteps(rawText); // Assuming this is available from normalize.js
 
-    editableCodeInput.innerHTML = ''; // Clear previous content
+    editableCodeInput.innerHTML = ""; // Clear previous content
 
     let currentIndex = 0;
     // Ensure steps are sorted by startIndex, as getNormalizationSteps should already do
-    // steps.sort((a, b) => a.startIndex - b.startIndex); 
+    // steps.sort((a, b) => a.startIndex - b.startIndex);
 
     for (const step of steps) {
       if (currentIndex < step.startIndex) {
-        editableCodeInput.appendChild(document.createTextNode(rawText.substring(currentIndex, step.startIndex)));
+        editableCodeInput.appendChild(
+          document.createTextNode(
+            rawText.substring(currentIndex, step.startIndex)
+          )
+        );
       }
-      const highlightSpan = document.createElement('span');
-      highlightSpan.className = 'highlight-char';
+      const highlightSpan = document.createElement("span");
+      highlightSpan.className = "highlight-char";
       // Use textContent for setting text on spans to prevent creating HTML entities from original text
-      highlightSpan.textContent = step.original; 
+      highlightSpan.textContent = step.original;
 
-      const tooltipSpan = document.createElement('span');
-      tooltipSpan.className = 'tooltip-text';
+      const tooltipSpan = document.createElement("span");
+      tooltipSpan.className = "tooltip-text";
       tooltipSpan.textContent = step.description; // Descriptions are assumed to be safe or should be escaped if from user
       highlightSpan.appendChild(tooltipSpan);
 
@@ -138,9 +202,11 @@ document.addEventListener('DOMContentLoaded', function () {
       currentIndex = step.endIndex;
     }
     if (currentIndex < rawText.length) {
-      editableCodeInput.appendChild(document.createTextNode(rawText.substring(currentIndex)));
+      editableCodeInput.appendChild(
+        document.createTextNode(rawText.substring(currentIndex))
+      );
     }
-    
+
     if (savedSel) {
       restoreSelection(editableCodeInput, savedSel);
     } else {
@@ -154,31 +220,35 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Normalize and copy
-    const cleanedText = normalize(rawText); 
-    navigator.clipboard.writeText(cleanedText)
+    const cleanedText = normalize(rawText);
+    navigator.clipboard
+      .writeText(cleanedText)
       .then(() => {
         // Only show copy success if text was actually copied and is not empty
         if (cleanedText.length > 0) {
-            showToast("Copied cleaned text to clipboard!");
+          showToast("Copied cleaned text to clipboard!");
         } else if (rawText.length > 0 && cleanedText.length === 0) {
-            // Edge case: if normalization results in empty string from non-empty input
-            showToast("Text normalized to empty, clipboard not changed.");
+          // Edge case: if normalization results in empty string from non-empty input
+          showToast("Text normalized to empty, clipboard not changed.");
         }
       })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
         showToast("Failed to copy text.");
       });
   }
 
   // --- Event Listener Setup ---
   if (editableCodeInput) {
-    editableCodeInput.addEventListener('input', debounce(processInputAndHighlight, 300)); // 300ms delay
-    
+    editableCodeInput.addEventListener(
+      "input",
+      debounce(processInputAndHighlight, 300)
+    ); // 300ms delay
+
     // Initial processing if content is already there (e.g. browser restore)
     // Check if it's not just placeholder-like or empty
     if (getRawText(editableCodeInput).trim().length > 0) {
-       processInputAndHighlight(); 
+      processInputAndHighlight();
     } else {
       // Set a placeholder visually via CSS if possible, or a gentle JS nudge
       // For now, we assume CSS :empty:before might handle this, or it's fine to be blank.
