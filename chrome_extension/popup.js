@@ -166,13 +166,12 @@ document.addEventListener("DOMContentLoaded", function () {
       typeof normalize !== "function"
     ) {
       console.error("Missing elements or normalize functions.");
-      // Optionally show a toast error here if it's a persistent issue
       return;
     }
 
     const rawText = getRawText(editableCodeInput);
     const savedSel = saveSelection(editableCodeInput);
-    const steps = getNormalizationSteps(rawText); // Assuming this is available from normalize.js
+    const steps = getNormalizationSteps(rawText);
 
     editableCodeInput.innerHTML = ""; // Clear previous content
 
